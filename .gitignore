@@ -18,3 +18,7 @@
 ###> ignore the .idea folder ###
 .idea
 ###< ignore the .idea folder ###
+
+###> ignore docker folder ###
+docker
+###< ignore docker folder ###
