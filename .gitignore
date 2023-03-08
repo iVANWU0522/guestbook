@@ -14,6 +14,9 @@
 .phpunit.result.cache
 ###< phpunit/phpunit ###
 
+###> ignore the public/uploads folder ###
+/public/uploads
+###< ignore the public/uploads folder ###
 
 ###> ignore the .idea folder ###
 .idea
