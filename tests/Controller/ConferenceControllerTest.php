@@ -15,6 +15,9 @@ class ConferenceControllerTest extends WebTestCase
         $this->assertSelectorTextContains('h2', 'Give your feedback');
     }
 
+    /**
+     * Todo: Fix this test
+     */
 //    public function testCommentSubmission(): void
 //    {
 //        $client = static::createClient();
