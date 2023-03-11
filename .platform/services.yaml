@@ -2,3 +2,12 @@
 database:
     type: postgresql:15
     disk: 1024
+
+varnish:
+    type: standard:6.0
+    relationships:
+        application: 'app:http'
+    configuration:
+        vcl: !include
+            type: string
+            path: config.vcl
