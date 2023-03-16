@@ -14,16 +14,8 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 #[ORM\Entity(repositoryClass: ConferenceRepository::class)]
 #[UniqueEntity('slug')]
 #[ApiResource(
-    collectionOperations: [
-        'get' => [
-            'normalization_context' => ['groups' => ['conference:list']],
-        ],
-    ],
-    itemOperations: [
-        'get' => [
-            'normalization_context' => ['groups' => ['conference:item']],
-        ],
-    ],
+    collectionOperations: ['get' => ['normalization_context' => ['groups' => 'conference:list']]],
+    itemOperations: ['get' => ['normalization_context' => ['groups' => 'conference:item']]],
     order: ['year' => 'DESC', 'city' => 'ASC'],
     paginationEnabled: false,
 )]
@@ -33,26 +25,26 @@ class Conference
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     #[Groups(['conference:list', 'conference:item'])]
-    private ?int $id = null;
+    private $id;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: 'string', length: 255)]
     #[Groups(['conference:list', 'conference:item'])]
-    private ?string $city = null;
+    private $city;
 
-    #[ORM\Column(length: 4)]
+    #[ORM\Column(type: 'string', length: 4)]
     #[Groups(['conference:list', 'conference:item'])]
-    private ?string $year = null;
+    private $year;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'boolean')]
     #[Groups(['conference:list', 'conference:item'])]
-    private ?bool $isInternational = null;
+    private $isInternational;
 
     #[ORM\OneToMany(mappedBy: 'conference', targetEntity: Comment::class, orphanRemoval: true)]
-    private Collection $comments;
+    private $comments;
 
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Groups(['conference:list', 'conference:item'])]
-    private ?string $slug = null;
+    private $slug;
 
     public function __construct()
     {
@@ -61,12 +53,19 @@ class Conference
 
     public function __toString(): string
     {
-        return $this->getCity() . ' ' . $this->getYear();
+        return $this->city.' '.$this->year;
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function computeSlug(SluggerInterface $slugger)
+    {
+        if (!$this->slug || '-' === $this->slug) {
+            $this->slug = (string) $slugger->slug((string) $this)->lower();
+        }
     }
 
     public function getCity(): ?string
@@ -93,7 +92,7 @@ class Conference
         return $this;
     }
 
-    public function isIsInternational(): ?bool
+    public function getIsInternational(): ?bool
     {
         return $this->isInternational;
     }
@@ -106,7 +105,7 @@ class Conference
     }
 
     /**
-     * @return Collection<int, Comment>
+     * @return Collection|Comment[]
      */
     public function getComments(): Collection
     {
@@ -116,7 +115,7 @@ class Conference
     public function addComment(Comment $comment): self
     {
         if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
+            $this->comments[] = $comment;
             $comment->setConference($this);
         }
 
@@ -145,12 +144,5 @@ class Conference
         $this->slug = $slug;
 
         return $this;
-    }
-
-    public function computeSlug(SluggerInterface $slugger): void
-    {
-        if (!$this->slug || '-' === $this->slug) {
-            $this->slug = (string) $slugger->slug((string) $this)->lower();
-        }
     }
 }

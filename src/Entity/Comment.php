@@ -6,7 +6,6 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\CommentRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -14,16 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-    collectionOperations: [
-        'get' => [
-            'normalization_context' => ['groups' => ['comment:list']],
-        ],
-    ],
-    itemOperations: [
-        'get' => [
-            'normalization_context' => ['groups' => ['comment:item']],
-        ],
-    ],
+    collectionOperations: ['get' => ['normalization_context' => ['groups' => 'comment:list']]],
+    itemOperations: ['get' => ['normalization_context' => ['groups' => 'comment:item']]],
     order: ['createdAt' => 'DESC'],
     paginationEnabled: false,
 )]
@@ -32,45 +23,45 @@ class Comment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Column(type: 'integer')]
     #[Groups(['comment:list', 'comment:item'])]
-    private ?int $id = null;
+    private $id;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
     #[Groups(['comment:list', 'comment:item'])]
-    private ?string $author = null;
+    private $author;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: 'text')]
     #[Assert\NotBlank]
     #[Groups(['comment:list', 'comment:item'])]
-    private ?string $text = null;
+    private $text;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Groups(['comment:list', 'comment:item'])]
-    private ?string $email = null;
+    private $email;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'datetime_immutable')]
     #[Groups(['comment:list', 'comment:item'])]
-    private ?\DateTimeImmutable $createdAt = null;
+    private $createdAt;
 
-    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\ManyToOne(targetEntity: Conference::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['comment:list', 'comment:item'])]
-    private ?Conference $conference = null;
+    private $conference;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups(['comment:list', 'comment:item'])]
-    private ?string $photoFilename = null;
+    private $photoFilename;
 
-    #[ORM\Column(length: 255, options: ['default' => 'submitted'])]
-    private ?string $state = 'submitted';
+    #[ORM\Column(type: 'string', length: 255, options: ["default" => "submitted"])]
+    private $state = 'submitted';
 
     public function __toString(): string
     {
-        return $this->getEmail();
+        return (string) $this->getEmail();
     }
 
     public function getId(): ?int
@@ -126,6 +117,12 @@ class Comment
         return $this;
     }
 
+    #[ORM\PrePersist]
+    public function setCreatedAtValue()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
     public function getConference(): ?Conference
     {
         return $this->conference;
@@ -148,15 +145,6 @@ class Comment
         $this->photoFilename = $photoFilename;
 
         return $this;
-    }
-
-    /*
-     * Lifecycle Callbacks
-     */
-    #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
-    {
-        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getState(): ?string
