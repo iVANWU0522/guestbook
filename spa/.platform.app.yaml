@@ -5,6 +5,8 @@ size: S
 build:
   flavor: none
 
+type: nodejs:18
+
 web:
   commands:
     start: sleep

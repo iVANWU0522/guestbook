@@ -16,11 +16,10 @@ runtime:
         - pdo_pgsql
         - sodium
         - xsl
-        
 
 variables:
     php:
-        opcache.preload: config/preload.php
+        opcache.preload: /app/config/preload.php
 build:
     flavor: none
 
@@ -37,11 +36,9 @@ mounts:
     "/var": { source: local, source_path: var }
     "/public/uploads": { source: local, source_path: uploads }
     # "/public/uploads": { source: service, service: files, source_path: uploads }
-    
 
 relationships:
     database: "database:postgresql"
-    
 hooks:
     build: |
         set -x -e
@@ -60,7 +57,7 @@ crons:
         # Check that no security issues have been found for PHP packages deployed in production
         # See https://github.com/fabpot/local-php-security-checker
         spec: '50 23 * * *'
-        cmd: if [ "$PLATFORM_ENVIRONMENT_TYPE" = "production" ]; then croncape php-security-checker; fi
+        cmd: if [ "$PLATFORM_BRANCH" = "main" ]; then croncape php-security-checker; fi
 
     comment_cleanup:
         # Cleanup every night at 11.50 pm (UTC).
