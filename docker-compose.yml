@@ -19,9 +19,9 @@ services:
     image: redis:5-alpine
     ports: [6379]
 
-  rabbitmq:
-    image: rabbitmq:3.8.9-management-alpine
-    ports: [5672, 15672]
+#  rabbitmq:
+#    image: rabbitmq:3.8.9-management-alpine
+#    ports: [5672, 15672]
 
 
 volumes:
